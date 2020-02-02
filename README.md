@@ -1,6 +1,9 @@
 # claws
 
-AWS command-line tool
+AWS command-line tool. The purpose of this tool is not to be a
+complete replacement for [awscli](https://aws.amazon.com/cli), but
+rather to provide a more convenient interface for some common
+commands.
 
 ## Installation
 
