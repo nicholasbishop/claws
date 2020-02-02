@@ -1,0 +1,13 @@
+[package]
+name = "claws"
+version = "0.1.0"
+authors = ["Nicholas Bishop <nicholasbishop@gmail.com>"]
+edition = "2018"
+description = "AWS command line tool"
+keywords = ["aws", "cli", "s3", "ec2"]
+
+[dependencies]
+rusoto_core = "0.42"
+rusoto_ec2 = "0.42"
+rusoto_s3 = "0.42"
+structopt = "0.3"
