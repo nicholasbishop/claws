@@ -13,10 +13,19 @@ commands.
 
 Currently just a couple commands are implemented.
 
-List EC2 instances:
+### EC2
+
+List instances:
 
     claws ec2 instances
     
-List S3 buckets:
+Start or stop an instance:
+
+    claws ec2 start <instance-id>
+    claws ec2 stop <instance-id>
+    
+### S3
+    
+List buckets:
 
     claws s3 buckets

@@ -1,5 +1,8 @@
 use rusoto_core::Region;
-use rusoto_ec2::{DescribeInstancesRequest, Ec2 as _, Ec2Client, Instance};
+use rusoto_ec2::{
+    DescribeInstancesRequest, Ec2 as _, Ec2Client, Instance,
+    StartInstancesRequest, StopInstancesRequest,
+};
 use rusoto_s3::{S3Client, S3 as _};
 use structopt::StructOpt;
 
@@ -79,6 +82,28 @@ fn ec2_list_instances() {
     }
 }
 
+fn ec2_start_instance(instance_id: String) {
+    let client = Ec2Client::new(Region::default());
+    client
+        .start_instances(StartInstancesRequest {
+            instance_ids: vec![instance_id],
+            ..Default::default()
+        })
+        .sync()
+        .expect("failed to start instance");
+}
+
+fn ec2_stop_instance(instance_id: String) {
+    let client = Ec2Client::new(Region::default());
+    client
+        .stop_instances(StopInstancesRequest {
+            instance_ids: vec![instance_id],
+            ..Default::default()
+        })
+        .sync()
+        .expect("failed to stop instance");
+}
+
 fn s3_list_buckets() {
     let client = S3Client::new(Region::default());
     let output = client
@@ -96,6 +121,10 @@ fn s3_list_buckets() {
 enum Ec2 {
     /// List instances.
     Instances,
+    /// Start an instance.
+    StartInstance { instance_id: String },
+    /// Stop an instance.
+    StopInstance { instance_id: String },
 }
 
 #[derive(Debug, StructOpt)]
@@ -114,6 +143,12 @@ enum Command {
 fn main() {
     match Command::from_args() {
         Command::Ec2(Ec2::Instances) => ec2_list_instances(),
+        Command::Ec2(Ec2::StartInstance { instance_id }) => {
+            ec2_start_instance(instance_id)
+        }
+        Command::Ec2(Ec2::StopInstance { instance_id }) => {
+            ec2_stop_instance(instance_id)
+        }
         Command::S3(S3::Buckets) => s3_list_buckets(),
     }
 }
