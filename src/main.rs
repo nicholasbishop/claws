@@ -51,11 +51,11 @@ fn ec2_list_instances() {
                 let id = instance
                     .instance_id
                     .clone()
-                    .unwrap_or("i-?????????????????".to_string());
-                let name =
-                    get_instance_name(&instance).unwrap_or("<no-name>".into());
+                    .unwrap_or_else(|| "i-?????????????????".to_string());
+                let name = get_instance_name(&instance)
+                    .unwrap_or_else(|| "<no-name>".into());
                 let state = get_instance_state_name(&instance)
-                    .unwrap_or("unknown".into());
+                    .unwrap_or_else(|| "unknown".into());
                 instances.push(Row { id, name, state });
             }
         }
