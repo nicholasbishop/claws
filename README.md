@@ -19,6 +19,10 @@ List instances:
 
     claws ec2 instances
     
+Get instance IP addresses:
+
+    claws ec2 addr <instance-id>
+    
 Start or stop an instance:
 
     claws ec2 start <instance-id>

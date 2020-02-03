@@ -82,6 +82,34 @@ fn ec2_list_instances() {
     }
 }
 
+fn ec2_show_addresses(instance_id: String) {
+    let client = Ec2Client::new(Region::default());
+    let output = client
+        .describe_instances(DescribeInstancesRequest {
+            instance_ids: Some(vec![instance_id]),
+            ..Default::default()
+        })
+        .sync()
+        .expect("failed to get instance details");
+    let reservations = output.reservations.expect("missing reservations field");
+    for reservation in reservations {
+        if let Some(res_instances) = reservation.instances {
+            for instance in res_instances {
+                println!(
+                    "private IP: {}",
+                    instance
+                        .private_ip_address
+                        .unwrap_or_else(|| String::new())
+                );
+                println!(
+                    "public IP: {}",
+                    instance.public_ip_address.unwrap_or_else(|| String::new())
+                );
+            }
+        }
+    }
+}
+
 fn ec2_start_instance(instance_id: String) {
     let client = Ec2Client::new(Region::default());
     client
@@ -121,6 +149,8 @@ fn s3_list_buckets() {
 enum Ec2 {
     /// List instances.
     Instances,
+    /// Show an instance's IP address(es)
+    Addr { instance_id: String },
     /// Start an instance.
     StartInstance { instance_id: String },
     /// Stop an instance.
@@ -143,6 +173,9 @@ enum Command {
 fn main() {
     match Command::from_args() {
         Command::Ec2(Ec2::Instances) => ec2_list_instances(),
+        Command::Ec2(Ec2::Addr { instance_id }) => {
+            ec2_show_addresses(instance_id)
+        }
         Command::Ec2(Ec2::StartInstance { instance_id }) => {
             ec2_start_instance(instance_id)
         }
