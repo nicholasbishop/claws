@@ -1,6 +1,6 @@
 [package]
 name = "claws"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Nicholas Bishop <nicholasbishop@gmail.com>"]
 edition = "2018"
 description = "AWS command line tool"
