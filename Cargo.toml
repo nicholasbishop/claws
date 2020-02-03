@@ -10,7 +10,7 @@ license = "Apache-2.0"
 readme = "README.md"
 
 [dependencies]
-rusoto_core = "0.42"
-rusoto_ec2 = "0.42"
-rusoto_s3 = "0.42"
+rusoto_core = { version = "0.42", default_features = false, features = ["rustls"] }
+rusoto_ec2 = { version = "0.42", default_features = false, features = ["rustls"] }
+rusoto_s3 = { version = "0.42", default_features = false, features = ["rustls"] }
 structopt = "0.3"
