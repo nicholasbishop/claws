@@ -1,7 +1,7 @@
 use rusoto_core::Region;
 use rusoto_ec2::{
     DescribeInstancesRequest, Ec2 as _, Ec2Client, Instance,
-    StartInstancesRequest, StopInstancesRequest,
+    RebootInstancesRequest, StartInstancesRequest, StopInstancesRequest,
 };
 use rusoto_s3::{S3Client, S3 as _};
 use structopt::StructOpt;
@@ -130,6 +130,17 @@ fn ec2_stop_instance(instance_id: String) {
         .expect("failed to stop instance");
 }
 
+fn ec2_reboot_instance(instance_id: String) {
+    let client = Ec2Client::new(Region::default());
+    client
+        .reboot_instances(RebootInstancesRequest {
+            instance_ids: vec![instance_id],
+            ..Default::default()
+        })
+        .sync()
+        .expect("failed to reboot instance");
+}
+
 fn s3_list_buckets() {
     let client = S3Client::new(Region::default());
     let output = client
@@ -153,6 +164,8 @@ enum Ec2 {
     StartInstance { instance_id: String },
     /// Stop an instance.
     StopInstance { instance_id: String },
+    /// Reboot an instance.
+    RebootInstance { instance_id: String },
 }
 
 #[derive(Debug, StructOpt)]
@@ -179,6 +192,9 @@ fn main() {
         }
         Command::Ec2(Ec2::StopInstance { instance_id }) => {
             ec2_stop_instance(instance_id)
+        }
+        Command::Ec2(Ec2::RebootInstance { instance_id }) => {
+            ec2_reboot_instance(instance_id)
         }
         Command::S3(S3::Buckets) => s3_list_buckets(),
     }

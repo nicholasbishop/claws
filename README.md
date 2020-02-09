@@ -23,10 +23,11 @@ Get instance IP addresses:
 
     claws ec2 addr <instance-id>
     
-Start or stop an instance:
+Start, stop, or reboot an instance:
 
     claws ec2 start <instance-id>
     claws ec2 stop <instance-id>
+    claws ec2 reboot <instance-id>
     
 ### S3
     
