@@ -2,6 +2,7 @@ use rusoto_core::Region;
 use rusoto_ec2::{
     DescribeInstancesRequest, Ec2 as _, Ec2Client, Instance,
     RebootInstancesRequest, StartInstancesRequest, StopInstancesRequest,
+    TerminateInstancesRequest,
 };
 use rusoto_s3::{S3Client, S3 as _};
 use structopt::StructOpt;
@@ -130,6 +131,17 @@ fn ec2_stop_instance(instance_id: String) {
         .expect("failed to stop instance");
 }
 
+fn ec2_terminate_instance(instance_id: String) {
+    let client = Ec2Client::new(Region::default());
+    client
+        .terminate_instances(TerminateInstancesRequest {
+            instance_ids: vec![instance_id],
+            ..Default::default()
+        })
+        .sync()
+        .expect("failed to terminate instance");
+}
+
 fn ec2_reboot_instance(instance_id: String) {
     let client = Ec2Client::new(Region::default());
     client
@@ -164,6 +176,8 @@ enum Ec2 {
     Start { instance_id: String },
     /// Stop an instance.
     Stop { instance_id: String },
+    /// Terminate an instance.
+    Terminate { instance_id: String },
     /// Reboot an instance.
     Reboot { instance_id: String },
 }
@@ -192,6 +206,9 @@ fn main() {
         }
         Command::Ec2(Ec2::Stop { instance_id }) => {
             ec2_stop_instance(instance_id)
+        }
+        Command::Ec2(Ec2::Terminate { instance_id }) => {
+            ec2_terminate_instance(instance_id)
         }
         Command::Ec2(Ec2::Reboot { instance_id }) => {
             ec2_reboot_instance(instance_id)
