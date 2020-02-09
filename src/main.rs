@@ -161,11 +161,11 @@ enum Ec2 {
     /// Show an instance's IP address(es)
     Addr { instance_id: String },
     /// Start an instance.
-    StartInstance { instance_id: String },
+    Start { instance_id: String },
     /// Stop an instance.
-    StopInstance { instance_id: String },
+    Stop { instance_id: String },
     /// Reboot an instance.
-    RebootInstance { instance_id: String },
+    Reboot { instance_id: String },
 }
 
 #[derive(Debug, StructOpt)]
@@ -187,13 +187,13 @@ fn main() {
         Command::Ec2(Ec2::Addr { instance_id }) => {
             ec2_show_addresses(instance_id)
         }
-        Command::Ec2(Ec2::StartInstance { instance_id }) => {
+        Command::Ec2(Ec2::Start { instance_id }) => {
             ec2_start_instance(instance_id)
         }
-        Command::Ec2(Ec2::StopInstance { instance_id }) => {
+        Command::Ec2(Ec2::Stop { instance_id }) => {
             ec2_stop_instance(instance_id)
         }
-        Command::Ec2(Ec2::RebootInstance { instance_id }) => {
+        Command::Ec2(Ec2::Reboot { instance_id }) => {
             ec2_reboot_instance(instance_id)
         }
         Command::S3(S3::Buckets) => s3_list_buckets(),
