@@ -1,3 +1,4 @@
+use anyhow::{Context, Error};
 use fehler::throws;
 use rusoto_core::Region;
 use rusoto_ec2::{
@@ -7,8 +8,6 @@ use rusoto_ec2::{
 };
 use rusoto_s3::{S3Client, S3 as _};
 use structopt::StructOpt;
-
-type Error = Box<dyn std::error::Error>;
 
 fn get_instance_name(instance: &Instance) -> Option<String> {
     if let Some(tags) = &instance.tags {
@@ -42,8 +41,9 @@ fn ec2_list_instances() {
             ..Default::default()
         })
         .sync()
-        .expect("failed to list instances");
-    let reservations = output.reservations.expect("missing reservations field");
+        .context("failed to list instances")?;
+    let reservations =
+        output.reservations.context("missing reservations field")?;
     struct Row {
         id: String,
         name: String,
@@ -96,8 +96,9 @@ fn ec2_show_addresses(instance_id: String) {
             ..Default::default()
         })
         .sync()
-        .expect("failed to get instance details");
-    let reservations = output.reservations.expect("missing reservations field");
+        .context("failed to get instance details")?;
+    let reservations =
+        output.reservations.context("missing reservations field")?;
     for reservation in reservations {
         if let Some(res_instances) = reservation.instances {
             for instance in res_instances {
@@ -123,7 +124,7 @@ fn ec2_start_instance(instance_id: String) {
             ..Default::default()
         })
         .sync()
-        .expect("failed to start instance");
+        .context("failed to start instance")?;
 }
 
 #[throws]
@@ -135,7 +136,7 @@ fn ec2_stop_instance(instance_id: String) {
             ..Default::default()
         })
         .sync()
-        .expect("failed to stop instance");
+        .context("failed to stop instance")?;
 }
 
 #[throws]
@@ -147,7 +148,7 @@ fn ec2_terminate_instance(instance_id: String) {
             ..Default::default()
         })
         .sync()
-        .expect("failed to terminate instance");
+        .context("failed to terminate instance")?;
 }
 
 #[throws]
@@ -159,7 +160,7 @@ fn ec2_reboot_instance(instance_id: String) {
             ..Default::default()
         })
         .sync()
-        .expect("failed to reboot instance");
+        .context("failed to reboot instance")?;
 }
 
 #[throws]
@@ -168,10 +169,10 @@ fn s3_list_buckets() {
     let output = client
         .list_buckets()
         .sync()
-        .expect("failed to list buckets");
-    let buckets = output.buckets.expect("missing buckets field");
+        .context("failed to list buckets")?;
+    let buckets = output.buckets.context("missing buckets field")?;
     for bucket in buckets {
-        let name = bucket.name.expect("missing bucket name");
+        let name = bucket.name.context("missing bucket name")?;
         println!("{}", name);
     }
 }
