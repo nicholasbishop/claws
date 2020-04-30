@@ -1,5 +1,5 @@
-use anyhow::{Context, Error};
-use fehler::throws;
+use anyhow::{anyhow, Context, Error, Result};
+use fehler::{throw, throws};
 use rusoto_core::Region;
 use rusoto_ec2::{
     DescribeInstancesRequest, Ec2 as _, Ec2Client, Instance,
@@ -89,6 +89,7 @@ fn ec2_list_instances() {
 
 #[throws]
 fn ec2_show_addresses(instance_id: String) {
+    println!("{}:", instance_id);
     let client = Ec2Client::new(Region::default());
     let output = client
         .describe_instances(DescribeInstancesRequest {
@@ -103,11 +104,11 @@ fn ec2_show_addresses(instance_id: String) {
         if let Some(res_instances) = reservation.instances {
             for instance in res_instances {
                 println!(
-                    "private IP: {}",
+                    "  private IP: {}",
                     instance.private_ip_address.unwrap_or_else(String::new)
                 );
                 println!(
-                    "public IP: {}",
+                    "  public IP: {}",
                     instance.public_ip_address.unwrap_or_else(String::new)
                 );
             }
@@ -182,15 +183,15 @@ enum Ec2 {
     /// List instances.
     Instances,
     /// Show an instance's IP address(es)
-    Addr { instance_id: String },
+    Addr { instance_ids: Vec<String> },
     /// Start an instance.
-    Start { instance_id: String },
+    Start { instance_ids: Vec<String> },
     /// Stop an instance.
-    Stop { instance_id: String },
+    Stop { instance_ids: Vec<String> },
     /// Terminate an instance.
-    Terminate { instance_id: String },
+    Terminate { instance_ids: Vec<String> },
     /// Reboot an instance.
-    Reboot { instance_id: String },
+    Reboot { instance_ids: Vec<String> },
 }
 
 #[derive(Debug, StructOpt)]
@@ -206,23 +207,40 @@ enum Command {
     S3(S3),
 }
 
+#[throws]
+fn for_each<F: Fn(String) -> Result<()>>(
+    func: F,
+    mut instance_ids: Vec<String>,
+) {
+    let mut any_errors = false;
+    for id in instance_ids.drain(..) {
+        if let Err(err) = func(id) {
+            eprintln!("{}", err);
+            any_errors = true;
+        }
+    }
+    if any_errors {
+        throw!(anyhow!("one or more operations failed"));
+    }
+}
+
 fn main() -> Result<(), Error> {
     match Command::from_args() {
         Command::Ec2(Ec2::Instances) => ec2_list_instances(),
-        Command::Ec2(Ec2::Addr { instance_id }) => {
-            ec2_show_addresses(instance_id)
+        Command::Ec2(Ec2::Addr { instance_ids }) => {
+            for_each(ec2_show_addresses, instance_ids)
         }
-        Command::Ec2(Ec2::Start { instance_id }) => {
-            ec2_start_instance(instance_id)
+        Command::Ec2(Ec2::Start { instance_ids }) => {
+            for_each(ec2_start_instance, instance_ids)
         }
-        Command::Ec2(Ec2::Stop { instance_id }) => {
-            ec2_stop_instance(instance_id)
+        Command::Ec2(Ec2::Stop { instance_ids }) => {
+            for_each(ec2_stop_instance, instance_ids)
         }
-        Command::Ec2(Ec2::Terminate { instance_id }) => {
-            ec2_terminate_instance(instance_id)
+        Command::Ec2(Ec2::Terminate { instance_ids }) => {
+            for_each(ec2_terminate_instance, instance_ids)
         }
-        Command::Ec2(Ec2::Reboot { instance_id }) => {
-            ec2_reboot_instance(instance_id)
+        Command::Ec2(Ec2::Reboot { instance_ids }) => {
+            for_each(ec2_reboot_instance, instance_ids)
         }
         Command::S3(S3::Buckets) => s3_list_buckets(),
     }
