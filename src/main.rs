@@ -1,3 +1,4 @@
+use fehler::throws;
 use rusoto_core::Region;
 use rusoto_ec2::{
     DescribeInstancesRequest, Ec2 as _, Ec2Client, Instance,
@@ -6,6 +7,8 @@ use rusoto_ec2::{
 };
 use rusoto_s3::{S3Client, S3 as _};
 use structopt::StructOpt;
+
+type Error = Box<dyn std::error::Error>;
 
 fn get_instance_name(instance: &Instance) -> Option<String> {
     if let Some(tags) = &instance.tags {
@@ -31,6 +34,7 @@ fn get_instance_state_name(instance: &Instance) -> Option<String> {
     None
 }
 
+#[throws]
 fn ec2_list_instances() {
     let client = Ec2Client::new(Region::default());
     let output = client
@@ -83,6 +87,7 @@ fn ec2_list_instances() {
     }
 }
 
+#[throws]
 fn ec2_show_addresses(instance_id: String) {
     let client = Ec2Client::new(Region::default());
     let output = client
@@ -109,6 +114,7 @@ fn ec2_show_addresses(instance_id: String) {
     }
 }
 
+#[throws]
 fn ec2_start_instance(instance_id: String) {
     let client = Ec2Client::new(Region::default());
     client
@@ -120,6 +126,7 @@ fn ec2_start_instance(instance_id: String) {
         .expect("failed to start instance");
 }
 
+#[throws]
 fn ec2_stop_instance(instance_id: String) {
     let client = Ec2Client::new(Region::default());
     client
@@ -131,6 +138,7 @@ fn ec2_stop_instance(instance_id: String) {
         .expect("failed to stop instance");
 }
 
+#[throws]
 fn ec2_terminate_instance(instance_id: String) {
     let client = Ec2Client::new(Region::default());
     client
@@ -142,6 +150,7 @@ fn ec2_terminate_instance(instance_id: String) {
         .expect("failed to terminate instance");
 }
 
+#[throws]
 fn ec2_reboot_instance(instance_id: String) {
     let client = Ec2Client::new(Region::default());
     client
@@ -153,6 +162,7 @@ fn ec2_reboot_instance(instance_id: String) {
         .expect("failed to reboot instance");
 }
 
+#[throws]
 fn s3_list_buckets() {
     let client = S3Client::new(Region::default());
     let output = client
@@ -195,7 +205,7 @@ enum Command {
     S3(S3),
 }
 
-fn main() {
+fn main() -> Result<(), Error> {
     match Command::from_args() {
         Command::Ec2(Ec2::Instances) => ec2_list_instances(),
         Command::Ec2(Ec2::Addr { instance_id }) => {
