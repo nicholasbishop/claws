@@ -31,6 +31,10 @@ Start, stop, or reboot an instance:
     
 ### CloudWatch Logs
 
+List log groups:
+
+    claws logs groups [<prefix>]
+
 List recent streams in a group:
 
     claws logs recent-streams [--limit <n>] <log-group-name>

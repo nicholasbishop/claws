@@ -7,7 +7,8 @@ use rusoto_ec2::{
     TerminateInstancesRequest,
 };
 use rusoto_logs::{
-    CloudWatchLogs, CloudWatchLogsClient, DescribeLogStreamsRequest,
+    CloudWatchLogs, CloudWatchLogsClient, DescribeLogGroupsRequest,
+    DescribeLogStreamsRequest,
 };
 use rusoto_s3::{S3Client, S3 as _};
 use std::{thread, time};
@@ -170,6 +171,38 @@ fn ec2_reboot_instance(instance_id: String) {
 
 // Not using #[throws] here because of
 // github.com/withoutboats/fehler/issues/52
+fn logs_groups(args: ListLogGroups) -> Result<(), Error> {
+    let client = CloudWatchLogsClient::new(Region::default());
+    let mut next_token = None;
+    loop {
+        let resp = client
+            .describe_log_groups(DescribeLogGroupsRequest {
+                log_group_name_prefix: args.prefix.clone(),
+                next_token: next_token.clone(),
+                ..Default::default()
+            })
+            .sync()
+            .context("failed to list groups")?;
+        if let Some(log_groups) = resp.log_groups {
+            for log_group in log_groups {
+                println!(
+                    "{}",
+                    log_group
+                        .log_group_name
+                        .ok_or_else(|| anyhow!("missing log group name"))?
+                );
+            }
+        }
+        // Finish if there are no more results
+        if resp.next_token.is_none() {
+            return Ok(());
+        }
+        next_token = resp.next_token;
+    }
+}
+
+// Not using #[throws] here because of
+// github.com/withoutboats/fehler/issues/52
 fn logs_recent_streams(args: RecentLogStreams) -> Result<(), Error> {
     let client = CloudWatchLogsClient::new(Region::default());
     let mut next_token = None;
@@ -249,6 +282,11 @@ enum Ec2 {
 }
 
 #[derive(Debug, StructOpt)]
+struct ListLogGroups {
+    prefix: Option<String>,
+}
+
+#[derive(Debug, StructOpt)]
 struct RecentLogStreams {
     log_group_name: String,
     #[structopt(long, default_value = "10")]
@@ -257,6 +295,8 @@ struct RecentLogStreams {
 
 #[derive(Debug, StructOpt)]
 enum Logs {
+    /// List CloudWatch Logs groups.
+    Groups(ListLogGroups),
     /// List recent CloudWatch Logs streams.
     RecentStreams(RecentLogStreams),
 }
@@ -310,6 +350,7 @@ fn main() -> Result<(), Error> {
         Command::Ec2(Ec2::Reboot { instance_ids }) => {
             for_each(ec2_reboot_instance, instance_ids)
         }
+        Command::Logs(Logs::Groups(args)) => logs_groups(args),
         Command::Logs(Logs::RecentStreams(args)) => logs_recent_streams(args),
         Command::S3(S3::Buckets) => s3_list_buckets(),
     }
