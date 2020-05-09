@@ -6,7 +6,11 @@ use rusoto_ec2::{
     RebootInstancesRequest, StartInstancesRequest, StopInstancesRequest,
     TerminateInstancesRequest,
 };
+use rusoto_logs::{
+    CloudWatchLogs, CloudWatchLogsClient, DescribeLogStreamsRequest,
+};
 use rusoto_s3::{S3Client, S3 as _};
+use std::{thread, time};
 use structopt::StructOpt;
 
 fn get_instance_name(instance: &Instance) -> Option<String> {
@@ -164,6 +168,56 @@ fn ec2_reboot_instance(instance_id: String) {
         .context("failed to reboot instance")?;
 }
 
+// Not using #[throws] here because of
+// github.com/withoutboats/fehler/issues/52
+fn logs_recent_streams(args: RecentLogStreams) -> Result<(), Error> {
+    let client = CloudWatchLogsClient::new(Region::default());
+    let mut next_token = None;
+    let mut remaining = args.limit as i64;
+    loop {
+        // The describe-log-streams operation has a limit of five
+        // transactions per second, so attempt up to five requests and
+        // then sleep for 1 second.
+        for _ in 0..5 {
+            // 50 is the maximum for a single request
+            let limit = std::cmp::min(remaining, 50);
+            let resp = client
+                .describe_log_streams(DescribeLogStreamsRequest {
+                    log_group_name: args.log_group_name.clone(),
+                    limit: Some(limit),
+                    order_by: Some("LastEventTime".to_string()),
+                    next_token: next_token.clone(),
+                    descending: Some(true),
+                    ..Default::default()
+                })
+                .sync()
+                .context("failed to list streams")?;
+            if let Some(log_streams) = resp.log_streams {
+                for log_stream in log_streams {
+                    println!(
+                        "{}",
+                        log_stream.log_stream_name.ok_or_else(|| anyhow!(
+                            "missing log stream name"
+                        ))?
+                    );
+                }
+            }
+            // Finish if there are no more results
+            if resp.next_token.is_none() {
+                return Ok(());
+            }
+            remaining -= limit;
+            // Finish if the number of requested streams has already
+            // been shown
+            if remaining <= 0 {
+                return Ok(());
+            }
+            next_token = resp.next_token;
+        }
+        thread::sleep(time::Duration::from_secs(1));
+    }
+}
+
 #[throws]
 fn s3_list_buckets() {
     let client = S3Client::new(Region::default());
@@ -195,6 +249,19 @@ enum Ec2 {
 }
 
 #[derive(Debug, StructOpt)]
+struct RecentLogStreams {
+    log_group_name: String,
+    #[structopt(long, default_value = "10")]
+    limit: usize,
+}
+
+#[derive(Debug, StructOpt)]
+enum Logs {
+    /// List buckets.
+    RecentStreams(RecentLogStreams),
+}
+
+#[derive(Debug, StructOpt)]
 enum S3 {
     /// List buckets.
     Buckets,
@@ -204,6 +271,7 @@ enum S3 {
 #[structopt(about = "AWS command-line tool")]
 enum Command {
     Ec2(Ec2),
+    Logs(Logs),
     S3(S3),
 }
 
@@ -242,6 +310,7 @@ fn main() -> Result<(), Error> {
         Command::Ec2(Ec2::Reboot { instance_ids }) => {
             for_each(ec2_reboot_instance, instance_ids)
         }
+        Command::Logs(Logs::RecentStreams(args)) => logs_recent_streams(args),
         Command::S3(S3::Buckets) => s3_list_buckets(),
     }
 }

@@ -14,5 +14,6 @@ anyhow = "1.0"
 fehler = "1.0"
 rusoto_core = { version = "0.42", default_features = false, features = ["rustls"] }
 rusoto_ec2 = { version = "0.42", default_features = false, features = ["rustls"] }
+rusoto_logs = { version = "0.42", default_features = false, features = ["rustls"] }
 rusoto_s3 = { version = "0.42", default_features = false, features = ["rustls"] }
 structopt = "0.3"

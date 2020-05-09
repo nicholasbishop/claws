@@ -29,6 +29,12 @@ Start, stop, or reboot an instance:
     claws ec2 stop <instance-id>
     claws ec2 reboot <instance-id>
     
+### CloudWatch Logs
+
+List recent streams in a group:
+
+    claws logs recent-streams [--limit <n>] <log-group-name>
+    
 ### S3
     
 List buckets:
