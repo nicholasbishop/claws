@@ -160,7 +160,7 @@ dependencies = [
 
 [[package]]
 name = "claws"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "anyhow 1.0.28 (registry+https://github.com/rust-lang/crates.io-index)",
  "fehler 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
