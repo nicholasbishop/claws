@@ -257,7 +257,7 @@ struct RecentLogStreams {
 
 #[derive(Debug, StructOpt)]
 enum Logs {
-    /// List buckets.
+    /// List recent CloudWatch Logs streams.
     RecentStreams(RecentLogStreams),
 }
 
