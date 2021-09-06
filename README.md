@@ -11,7 +11,7 @@ commands.
 
 ## Usage
 
-Currently just a couple commands are implemented.
+Currently just a few commands are implemented.
 
 ### EC2
 
