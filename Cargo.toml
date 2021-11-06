@@ -11,10 +11,10 @@ license = "Apache-2.0"
 readme = "README.md"
 
 [dependencies]
-anyhow = { version = "1.0", default_features = false, features = ["std"] }
-fehler = { version = "1.0", default_features = false }
-rusoto_core = { version = "0.42", default_features = false, features = ["rustls"] }
-rusoto_ec2 = { version = "0.42", default_features = false, features = ["rustls"] }
-rusoto_logs = { version = "0.42", default_features = false, features = ["rustls"] }
-rusoto_s3 = { version = "0.42", default_features = false, features = ["rustls"] }
-structopt = { version = "0.3", default_features = false }
+anyhow = { version = "1.0.45", default_features = false, features = ["std"] }
+fehler = { version = "1.0.0", default_features = false }
+rusoto_core = { version = "0.42.0", default_features = false, features = ["rustls"] }
+rusoto_ec2 = { version = "0.42.0", default_features = false, features = ["rustls"] }
+rusoto_logs = { version = "0.42.0", default_features = false, features = ["rustls"] }
+rusoto_s3 = { version = "0.42.0", default_features = false, features = ["rustls"] }
+structopt = { version = "0.3.25", default_features = false }
