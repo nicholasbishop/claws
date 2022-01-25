@@ -16,5 +16,5 @@ fehler = { version = "1.0.0", default_features = false }
 rusoto_core = { version = "0.42.0", default_features = false, features = ["rustls"] }
 rusoto_ec2 = { version = "0.42.0", default_features = false, features = ["rustls"] }
 rusoto_logs = { version = "0.42.0", default_features = false, features = ["rustls"] }
-rusoto_s3 = { version = "0.42.0", default_features = false, features = ["rustls"] }
+rusoto_s3 = { version = "0.47.0", default_features = false, features = ["rustls"] }
 structopt = { version = "0.3.26", default_features = false }
