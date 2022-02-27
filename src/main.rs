@@ -110,11 +110,11 @@ fn ec2_show_addresses(instance_id: String) {
             for instance in res_instances {
                 println!(
                     "  private IP: {}",
-                    instance.private_ip_address.unwrap_or_else(String::new)
+                    instance.private_ip_address.unwrap_or_default()
                 );
                 println!(
                     "  public IP: {}",
-                    instance.public_ip_address.unwrap_or_else(String::new)
+                    instance.public_ip_address.unwrap_or_default()
                 );
             }
         }
