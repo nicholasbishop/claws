@@ -1,3 +1,5 @@
+**This tool is no longer under active development. If you are interested in taking over or repurposing the name on crates.io, feel free to contact me: nbishop@nbishop.net**
+
 # claws
 
 AWS command-line tool. The purpose of this tool is not to be a
